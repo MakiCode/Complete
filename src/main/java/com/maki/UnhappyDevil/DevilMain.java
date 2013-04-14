@@ -5,6 +5,7 @@ import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 
+// testing to make sure we understand git cloning and updating
 public class DevilMain {
   public static final int FRAME_WIDTH = 920;
   public static final int FRAME_HEIGHT = 768;
