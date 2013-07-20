@@ -7,7 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -23,11 +22,8 @@ import java.util.Random;
 import java.util.Stack;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 
 /**
  * An Eight Puzzle game where you can click on blocks and they slide into an
@@ -39,69 +35,13 @@ import javax.swing.JPopupMenu;
 @SuppressWarnings("serial")
 public class EightPuzzle extends JPanel {
 
-	private int currentFrameWidth;
-	private int currentFrameHeight;
-	private int sideWidth;
+	private int currentPanelSize;
+	private int sideSize;
 	private Map<Integer, Image> imageMap;
-	private Rectangle nextMove;
-	private Rectangle scramble;
 	private int[][] gameBoard;
-	private boolean clickingNext = false;
-	private boolean clickingScramble = false;
-	private int diffHeightWidth;
 	private int sideHeight;
 	private int numOfTilesOnSide;
 	private int numOfFrames = 30;
-	private final Dimension nextMoveStringDim = new Dimension(66, 10);
-	private final Dimension scrambleStringDim = new Dimension(55, 10);
-	private JPopupMenu nextMovePopUp;
-
-	public static void main(final String[] args) {
-		EightPuzzle eightPuzzle = new EightPuzzle(450, 550, 3);
-		eightPuzzle.createFrame();
-	}
-
-	/**
-	 * Create the frame and put this panel in it and GO!
-	 */
-	private void createFrame() {
-		JFrame frame = new JFrame();
-		frame.setSize(new Dimension(currentFrameWidth, currentFrameHeight));
-		Point position = getCenterPosition(frame.getSize(), Toolkit
-				.getDefaultToolkit().getScreenSize());
-		frame.setLocation((int) position.getX(), (int) position.getY());
-
-		frame.add(this);
-		frame.addComponentListener(getComponentListener());
-		createPopUps();
-
-		frame.setResizable(true);
-		frame.setVisible(true);
-	}
-
-	private void createPopUps() {
-		nextMovePopUp = new JPopupMenu();
-		JMenuItem menuItem = new JMenuItem(
-				"Clicking this will cause the computer to decide the next move.");
-		nextMovePopUp.add(menuItem);
-		nextMovePopUp.addMouseListener(new NextMovePopupListener());
-
-	}
-
-	private class NextMovePopupListener extends MouseAdapter {
-
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			if (e.getButton() == MouseEvent.BUTTON3) {
-				if (nextMove.contains(e.getX(), e.getY())) {
-					if (e.isPopupTrigger()) {
-						nextMovePopUp
-								.show(EightPuzzle.this, e.getX(), e.getY());
-					}
-				}
-			}
-		}
-	}
 
 	/**
 	 * Activate the animation loop. This Method runs forever so be careful.
@@ -119,35 +59,16 @@ public class EightPuzzle extends JPanel {
 	}
 
 	/**
-	 * Get the Component listener for this EightPuzzle.
-	 * 
-	 * @return A component listener that only handles resize events
-	 */
-	private ComponentListener getComponentListener() {
-		return new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				Dimension currentSize = e.getComponent().getSize();
-				makeVars(currentSize.width, currentSize.height,
-						numOfTilesOnSide);
-			}
-		};
-	}
-
-	/**
 	 * Create an Instance of EightPuzzle in a JPanel.
 	 * 
-	 * @param frameWidth
-	 *            The Width of the Frame this game will be put into
-	 * @param frameHeight
-	 *            The Height of the Frame this game will be put into
+	 * @param frameSize
+	 *            The Size (width and height) of the Frame this game will be put
+	 *            into
 	 * @param numOfTilesOnSideVal
 	 *            The number of tiles on one side of the game
 	 */
-	public EightPuzzle(final int frameWidth, final int frameHeight,
-			int numOfTilesOnSideVal) {
-
-		makeVars(frameWidth, frameHeight, numOfTilesOnSideVal);
+	public EightPuzzle(final int frameSize, final int numOfTilesOnSideVal) {
+		makeVars(frameSize, numOfTilesOnSideVal);
 		addMouseListener(new MyMouseListener());
 		generateMap();
 		scramble();
@@ -156,41 +77,16 @@ public class EightPuzzle extends JPanel {
 	/**
 	 * Redefine the variables pertaining to the screen dimensions
 	 * 
-	 * @param frameWidth
-	 *            the width of the frame
-	 * @param frameHeight
+	 * 
+	 * @param frameSize
 	 *            the height of the frame
+	 * @param numOfTilesOnSideVal
+	 *            The number of tiles on a single side of the puzzle
 	 */
-	private void makeVars(final int frameWidth, final int frameHeight,
-			int numOfTilesOnSideVal) {
+	private void makeVars(final int frameSize, int numOfTilesOnSideVal) {
 		numOfTilesOnSide = numOfTilesOnSideVal;
-		currentFrameWidth = frameWidth;
-		currentFrameHeight = frameHeight;
-		diffHeightWidth = frameHeight - frameWidth;
-		sideWidth = currentFrameWidth / numOfTilesOnSideVal;
-		sideHeight = (currentFrameHeight - diffHeightWidth)
-				/ numOfTilesOnSideVal;
-
-		int buttonWidth = (currentFrameWidth / 3) / 2;
-		int buttonHeight = diffHeightWidth / 2;
-		if (buttonHeight <= 40) {
-			buttonHeight = 40;
-		}
-
-		int yOfButtonsFromBot = 70;
-		int spacing = (sideWidth / 15);
-		int buttonY = currentFrameHeight - diffHeightWidth
-				+ ((diffHeightWidth / 3) / 2);
-		if (buttonY >= frameHeight - yOfButtonsFromBot) {
-			buttonY = frameHeight - yOfButtonsFromBot;
-		}
-
-		int firstButtonX = currentFrameWidth / 3;
-
-		nextMove = new Rectangle(firstButtonX, buttonY, buttonWidth,
-				buttonHeight);
-		scramble = new Rectangle(firstButtonX + buttonWidth + spacing, buttonY,
-				buttonWidth, buttonHeight);
+		currentPanelSize = frameSize;
+		sideSize = currentPanelSize / numOfTilesOnSideVal;
 
 		if (gameBoard == null) {
 			gameBoard = new int[numOfTilesOnSideVal][numOfTilesOnSideVal];
@@ -215,41 +111,16 @@ public class EightPuzzle extends JPanel {
 		for (int rows = 0; rows < gameBoard.length; rows++) {
 			for (int columns = 0; columns < gameBoard[rows].length; columns++) {
 				// potential spot for animation
-				int x = columns * sideWidth;
+				int x = columns * sideSize;
 				int y = rows * sideHeight;
 				g.drawImage(
 						resizeImage((BufferedImage) imageMap
 								.get(gameBoard[rows][columns]), sideHeight,
-								sideWidth), x, y, null);
+								sideSize), x, y, null);
 				g2d.setColor(Color.BLACK);
-				g2d.drawRect(x, y, sideWidth, sideHeight);
+				g2d.drawRect(x, y, sideSize, sideHeight);
 			}
 		}
-		// Fills in the gray at where the buttons are
-		g2d.setColor(Color.LIGHT_GRAY);
-		g2d.fillRect(0, currentFrameHeight - diffHeightWidth,
-				currentFrameWidth, diffHeightWidth);
-		// Draws an outline around the area where the buttons are
-		g2d.setColor(Color.BLACK);
-		g2d.drawRect(0, currentFrameHeight - diffHeightWidth,
-				currentFrameWidth, diffHeightWidth);
-
-		// Draw the buttons
-		g2d.setColor(Color.CYAN);
-		g2d.fill3DRect(nextMove.x, nextMove.y, nextMove.width, nextMove.height,
-				!clickingNext);
-		g2d.fill3DRect(scramble.x, scramble.y, scramble.width, scramble.height,
-				!clickingScramble);
-		// and draw the strings onto the buttons
-		g2d.setColor(Color.BLACK);
-		Point scramblePos = getCenterPosition(scrambleStringDim,
-				scramble.getSize());
-		Point nextMovePos = getCenterPosition(nextMoveStringDim,
-				nextMove.getSize());
-		g2d.drawString("Next Move", nextMove.x + nextMovePos.x, nextMove.y
-				+ nextMovePos.y + nextMoveStringDim.height);
-		g2d.drawString("Scramble", scramble.x + scramblePos.x, scramble.y
-				+ scramblePos.y + nextMoveStringDim.height);
 	}
 
 	/**
@@ -308,13 +179,13 @@ public class EightPuzzle extends JPanel {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		img = resizeImage(img, currentFrameWidth, currentFrameHeight
+		img = resizeImage(img, currentPanelSize, currentPanelHeight
 				- diffHeightWidth);
 
 		Graphics g = img.getGraphics();
 		g.setColor(Color.LIGHT_GRAY);
-		g.fillRect((numOfTilesOnSide - 1) * sideWidth, (numOfTilesOnSide - 1)
-				* sideHeight, sideWidth, sideHeight);
+		g.fillRect((numOfTilesOnSide - 1) * sideSize, (numOfTilesOnSide - 1)
+				* sideHeight, sideSize, sideHeight);
 		g.dispose();
 
 		imageMap = splitImg(img, numOfTilesOnSide);
@@ -553,7 +424,7 @@ public class EightPuzzle extends JPanel {
 				scramble();
 				repaint();
 			} else if (e.getButton() == MouseEvent.BUTTON1) {
-				if (swap(e.getX() / sideWidth, e.getY() / sideWidth)) {
+				if (swap(e.getX() / sideSize, e.getY() / sideSize)) {
 					repaint();
 				}
 			}
