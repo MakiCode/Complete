@@ -6,10 +6,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -83,7 +79,7 @@ public class EightPuzzle extends JPanel {
 	 * @param numOfTilesOnSideVal
 	 *            The number of tiles on a single side of the puzzle
 	 */
-	private void makeVars(final int frameSize, int numOfTilesOnSideVal) {
+	public void makeVars(final int frameSize, int numOfTilesOnSideVal) {
 		numOfTilesOnSide = numOfTilesOnSideVal;
 		currentPanelSize = frameSize;
 		sideSize = currentPanelSize / numOfTilesOnSideVal;
@@ -179,8 +175,7 @@ public class EightPuzzle extends JPanel {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		img = resizeImage(img, currentPanelSize, currentPanelHeight
-				- diffHeightWidth);
+		img = resizeImage(img, currentPanelSize, currentPanelSize);
 
 		Graphics g = img.getGraphics();
 		g.setColor(Color.LIGHT_GRAY);
@@ -245,7 +240,7 @@ public class EightPuzzle extends JPanel {
 	/**
 	 * Scramble the gameboard by making 25 random moves
 	 */
-	private void scramble() {
+	public void scramble() {
 		Random randomGen = new Random();
 		int loopVar = (int) (25 + Math.pow(numOfTilesOnSide, 2));
 		for (int i = 0; i < loopVar; i++) {
@@ -260,7 +255,7 @@ public class EightPuzzle extends JPanel {
 	/**
 	 * Find the proper best next move to make
 	 */
-	private void findNextMove() {
+	public void findNextMove() {
 		Solver solver = new Solver(new Board(gameBoard));
 		Stack<Board> stack = solver.solution();
 		stack.pop();
@@ -274,7 +269,7 @@ public class EightPuzzle extends JPanel {
 	 * 
 	 * @returns true if the puzzle is completed false otherwise
 	 */
-	private boolean checkState() {
+	public boolean isSolved() {
 		Board board = new Board(gameBoard);
 		if (board.hamming() == 0) {
 			return true;
@@ -286,7 +281,7 @@ public class EightPuzzle extends JPanel {
 	 * Display a JOptionPane and execute the proper action based on the users
 	 * input
 	 */
-	private void showOptions() {
+	private void showComplete() {
 		int choice = JOptionPane.showConfirmDialog(this,
 				"Puzzle complete.\nWould you like to retry the puzzle?");
 		if (choice == 0) {
@@ -295,26 +290,7 @@ public class EightPuzzle extends JPanel {
 		repaint();
 	}
 
-	/**
-	 * Display a warning saying that the algorithm to solve the puzzle may take
-	 * a long time, An infeasible long time
-	 * 
-	 * @return true if the player wants to continue the next move operation
-	 */
-	private boolean showWarning() {
-		int choice = JOptionPane.showConfirmDialog(this,
-				"WARNING: This puzzle is rather large.\n"
-						+ "Finding the next move may take\n"
-						+ "a VERY long time if the puzzle\n"
-						+ "is heavily scrambled. Do you\n"
-						+ "want to continue with the next\n"
-						+ "move operation?");
-		if (choice == 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+
 
 	/**
 	 * Swap a position on the board with the coordinates of the zero value in
@@ -383,58 +359,18 @@ public class EightPuzzle extends JPanel {
 		return null;
 	}
 
-	/**
-	 * Handle clicking the next move button. Displays warning if needed.
-	 */
-	private void handleNext() {
-		boolean doNextMove = true;
-		if (numOfTilesOnSide >= 5) {
-			Board board = new Board(gameBoard);
-			if (board.hamming() > Math.pow(numOfTilesOnSide, 2) / 3) {
-				if (!showWarning()) {
-					doNextMove = false;
-				}
-			}
-		}
-		if (doNextMove) {
-			findNextMove();
-		}
-		repaint();
-	}
-
 	private class MyMouseListener extends MouseAdapter {
 		@Override
-		public final void mousePressed(final MouseEvent e) {
+		public final void mouseClicked(final MouseEvent e) {
 			if (e.getButton() == MouseEvent.BUTTON1) {
-				if (nextMove.contains(new Point(e.getX(), e.getY()))) {
-					clickingNext = true;
-					repaint();
-				} else if (scramble.contains(new Point(e.getX(), e.getY()))) {
-					clickingScramble = true;
-					repaint();
-				}
-			}
-		}
-
-		@Override
-		public final void mouseReleased(final MouseEvent e) {
-			if (clickingNext) {
-				handleNext();
-			} else if (clickingScramble) {
-				scramble();
-				repaint();
-			} else if (e.getButton() == MouseEvent.BUTTON1) {
 				if (swap(e.getX() / sideSize, e.getY() / sideSize)) {
 					repaint();
 				}
 			}
-			if (checkState()) {
-				showOptions();
+			if (isSolved()) {
+				showComplete();
 			}
-			clickingNext = false;
-			clickingScramble = false;
 		}
-
 	}
 
 }
