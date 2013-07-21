@@ -188,7 +188,7 @@ public class EightPuzzle extends JPanel {
 		imageMap = new HashMap<Integer, Image>();
 		BufferedImage img = null;
 		try {
-			img = ImageIO.read(f);
+			img = ImageIO.read(f.getName());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
