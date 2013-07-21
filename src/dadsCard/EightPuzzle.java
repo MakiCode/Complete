@@ -9,6 +9,7 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -35,9 +36,9 @@ public class EightPuzzle extends JPanel {
 	private int sideSize;
 	private Map<Integer, Image> imageMap;
 	private int[][] gameBoard;
-	private int sideHeight;
 	private int numOfTilesOnSide;
 	private int numOfFrames = 30;
+	private File imageFile;
 
 	/**
 	 * Activate the animation loop. This Method runs forever so be careful.
@@ -65,17 +66,17 @@ public class EightPuzzle extends JPanel {
 	 */
 	public EightPuzzle(final int frameSize, final int numOfTilesOnSideVal) {
 		makeVars(frameSize, numOfTilesOnSideVal);
+		imageFile = new File("image.png");
 		addMouseListener(new MyMouseListener());
-		generateMap();
+		generateMap(imageFile);
 		scramble();
 	}
 
 	/**
 	 * Redefine the variables pertaining to the screen dimensions
 	 * 
-	 * 
 	 * @param frameSize
-	 *            the height of the frame
+	 *            the size of both sides of the frame
 	 * @param numOfTilesOnSideVal
 	 *            The number of tiles on a single side of the puzzle
 	 */
@@ -99,6 +100,21 @@ public class EightPuzzle extends JPanel {
 				}
 			}
 		}
+		repaint();
+	}
+
+	/**
+	 * Resizes the dimensions of the game
+	 * 
+	 * @param numOfTilesOnSideVal
+	 *            The number of tiles on a single side of the puzzle
+	 */
+	public void resizeGame(final int frameSize, int numOfTilesOnSideVal) {
+		gameBoard = null;
+		makeVars(frameSize, numOfTilesOnSideVal);
+		generateMap(imageFile);
+		scramble();
+		repaint();
 	}
 
 	@Override
@@ -108,13 +124,13 @@ public class EightPuzzle extends JPanel {
 			for (int columns = 0; columns < gameBoard[rows].length; columns++) {
 				// potential spot for animation
 				int x = columns * sideSize;
-				int y = rows * sideHeight;
+				int y = rows * sideSize;
 				g.drawImage(
 						resizeImage((BufferedImage) imageMap
-								.get(gameBoard[rows][columns]), sideHeight,
+								.get(gameBoard[rows][columns]), sideSize,
 								sideSize), x, y, null);
 				g2d.setColor(Color.BLACK);
-				g2d.drawRect(x, y, sideSize, sideHeight);
+				g2d.drawRect(x, y, sideSize, sideSize);
 			}
 		}
 	}
@@ -162,27 +178,28 @@ public class EightPuzzle extends JPanel {
 		g.dispose();
 		return resizedImage;
 	}
-
+	
 	/**
+	 * 
 	 * Generate the hashmap that represents the connection between the 2d array
 	 * and the images that data refers too
 	 */
-	private void generateMap() {
+	private void generateMap(File f) {
 		imageMap = new HashMap<Integer, Image>();
 		BufferedImage img = null;
 		try {
-			img = getImg("image.png");
+			img = ImageIO.read(f);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		img = resizeImage(img, currentPanelSize, currentPanelSize);
-
+		
 		Graphics g = img.getGraphics();
 		g.setColor(Color.LIGHT_GRAY);
 		g.fillRect((numOfTilesOnSide - 1) * sideSize, (numOfTilesOnSide - 1)
-				* sideHeight, sideSize, sideHeight);
+				* sideSize, sideSize, sideSize);
 		g.dispose();
-
+		
 		imageMap = splitImg(img, numOfTilesOnSide);
 	}
 
@@ -219,25 +236,6 @@ public class EightPuzzle extends JPanel {
 	}
 
 	/**
-	 * Load the image at the specified fileName
-	 * 
-	 * @param fileName
-	 *            the name of the file that has the image
-	 * @return the image in fileName
-	 * @throws IOException
-	 *             if there is a problem in the FileIO
-	 */
-	private BufferedImage getImg(String fileName) throws IOException {
-		BufferedImage img;
-		URL url = this.getClass().getResource(fileName);
-		if (url == null) {
-			throw new IOException("Input was wrong");
-		}
-		img = ImageIO.read(url);
-		return img;
-	}
-
-	/**
 	 * Scramble the gameboard by making 25 random moves
 	 */
 	public void scramble() {
@@ -249,7 +247,10 @@ public class EightPuzzle extends JPanel {
 			gameBoard = boardNeighbors.get(
 					randomGen.nextInt(boardNeighbors.size())).getTiles();
 		}
-
+		repaint();
+		if (isSolved()) {
+			scramble();
+		}
 	}
 
 	/**
@@ -261,6 +262,10 @@ public class EightPuzzle extends JPanel {
 		stack.pop();
 		if (!stack.isEmpty()) {
 			gameBoard = stack.pop().getTiles();
+		}
+		repaint();
+		if (isSolved()) {
+			showComplete();
 		}
 	}
 
@@ -289,8 +294,6 @@ public class EightPuzzle extends JPanel {
 		}
 		repaint();
 	}
-
-
 
 	/**
 	 * Swap a position on the board with the coordinates of the zero value in
@@ -371,6 +374,39 @@ public class EightPuzzle extends JPanel {
 				showComplete();
 			}
 		}
+	}
+
+	public double numWrong() {
+		return new Board(gameBoard).hamming();
+	}
+
+	public int getSizeOfPanel() {
+		return currentPanelSize;
+	}
+
+	public void changePic(File file) {
+		if (isImage(file)) {
+			imageFile = file;
+			generateMap(file);
+		} else {
+			showFailedLoad();
+		}
+	}
+
+	private void showFailedLoad() {
+		JOptionPane.showMessageDialog(this,
+				"The file you specified was not an Image!");
+	}
+
+	public static boolean isImage(File f) {
+		try {
+			if (ImageIO.read(f) == null) {
+				return false;
+			}
+		} catch (IOException e) {
+			return false;
+		}
+		return true;
 	}
 
 }
