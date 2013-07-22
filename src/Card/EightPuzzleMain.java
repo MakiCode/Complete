@@ -2,7 +2,6 @@ package src.Card;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -33,7 +32,7 @@ public class EightPuzzleMain extends JFrame {
 	private EightPuzzle puzzle;
 	private JPanel buttonPanel;
 	private JMenuBar menubar;
-	private String defaultFileName = "image.png";
+	private String defaultFileName = "/src/Card/image.png";
 	private String defaultFile;
 
 	public static void main(final String[] args) {
@@ -47,6 +46,7 @@ public class EightPuzzleMain extends JFrame {
 		add(puzzle, BorderLayout.CENTER);
 
 		defaultFile = getClass().getResource(defaultFileName).getFile();
+		System.out.println("Main file is:" + defaultFile);
 
 		puzzle.createGame(defaultFileName);
 
@@ -107,6 +107,7 @@ public class EightPuzzleMain extends JFrame {
 			try {
 				ImageIO.write((BufferedImage) image, "png", new File(
 						defaultFile));
+				JOptionPane.showMessageDialog(EightPuzzleMain.this, "This image is now to the default image.", "Success!", JOptionPane.DEFAULT_OPTION);
 			} catch (IOException e1) {
 				JOptionPane.showMessageDialog(EightPuzzleMain.this,
 						"Failed to write to file, Error ID;" + e.getID(), "Failed to write", JOptionPane.ERROR_MESSAGE);
@@ -218,7 +219,7 @@ public class EightPuzzleMain extends JFrame {
 					if (intInput <= 1) {
 						JOptionPane.showMessageDialog(EightPuzzleMain.this,
 								"Please enter a number greater than one.",
-								"Too small!", JOptionPane.INFORMATION_MESSAGE);
+								"Too small!", JOptionPane.DEFAULT_OPTION);
 					} else {
 						numOfTilesOnSide = intInput;
 						puzzle.resizeGame(getWidth(), intInput);

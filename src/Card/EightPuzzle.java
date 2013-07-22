@@ -9,6 +9,8 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -75,7 +77,6 @@ public class EightPuzzle extends JPanel {
 		this.imageFile = imageFile;
 		generateMap(imageFile);
 		scramble();
-
 	}
 
 	/**
@@ -106,6 +107,7 @@ public class EightPuzzle extends JPanel {
 				}
 			}
 		}
+		addMouseListener(new MyMouseListener());
 		repaint();
 	}
 
@@ -192,6 +194,10 @@ public class EightPuzzle extends JPanel {
 	 */
 	private void generateMap(File f) {
 		BufferedImage img = null;
+		System.out.println("f.canRead() = " + f.canRead());
+		System.out.println("f.getAbsolutePath() = " + f.getAbsolutePath());
+		System.out.println("f.exists() = " + f.exists());
+		
 		try {
 			img = ImageIO.read(f);
 		} catch (IOException e) {
@@ -201,6 +207,7 @@ public class EightPuzzle extends JPanel {
 		}
 		imageMap = new HashMap<Integer, Image>();
 		img = resizeImage(img, currentPanelSize, currentPanelSize);
+		currentImage = copyImg(img);
 
 		Graphics g = img.getGraphics();
 		g.setColor(Color.LIGHT_GRAY);
@@ -210,7 +217,13 @@ public class EightPuzzle extends JPanel {
 
 		imageMap = splitImg(img, numOfTilesOnSide);
 		imageFile = f;
-		currentImage = img;
+	}
+
+	static BufferedImage copyImg(BufferedImage bi) {
+		ColorModel cm = bi.getColorModel();
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		WritableRaster raster = bi.copyData(null);
+		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
 	}
 
 	public Image getCurrentImage() {
@@ -321,7 +334,7 @@ public class EightPuzzle extends JPanel {
 	 * @return true if swap succeeded
 	 */
 	private boolean swap(final int x, final int y) {
-		if (!(x >= 3 || y >= 3 || x < 0 || y < 0)) {
+		if (!(x >= numOfTilesOnSide || y >= numOfTilesOnSide || x < 0 || y < 0)) {
 			Point zeroCoords = getZeroCoords();
 			if ((Math.abs(x - zeroCoords.x) == 1 ^ Math.abs(y - zeroCoords.y) == 1)) {
 				if (Math.abs(y - zeroCoords.y) == 1
@@ -381,6 +394,7 @@ public class EightPuzzle extends JPanel {
 		@Override
 		public final void mouseClicked(final MouseEvent e) {
 			if (e.getButton() == MouseEvent.BUTTON1) {
+
 				if (swap(e.getX() / sideSize, e.getY() / sideSize)) {
 					repaint();
 				}
@@ -406,6 +420,7 @@ public class EightPuzzle extends JPanel {
 
 	private void showFailedLoad() {
 		JOptionPane.showMessageDialog(this,
-				"The file you specified failed to load!!", "Failed to load", JOptionPane.ERROR_MESSAGE);
+				"The file you specified failed to load!!", "Failed to load",
+				JOptionPane.ERROR_MESSAGE);
 	}
 }
