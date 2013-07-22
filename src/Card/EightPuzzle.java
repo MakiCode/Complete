@@ -30,7 +30,7 @@ import javax.swing.JPanel;
  */
 @SuppressWarnings("serial")
 public class EightPuzzle extends JPanel {
-	//TODO: Work on animator
+	// TODO: Work on animator
 
 	private int currentPanelSize;
 	private int sideSize;
@@ -64,9 +64,10 @@ public class EightPuzzle extends JPanel {
 	 *            into
 	 * @param numOfTilesOnSideVal
 	 *            The number of tiles on one side of the game
-	 * @param eightPuzzleLoader2 
+	 * @param eightPuzzleLoader2
 	 */
-	public EightPuzzle(final int frameSize, final int numOfTilesOnSideVal, EightPuzzleLoader eightPuzzleLoader2) {
+	public EightPuzzle(final int frameSize, final int numOfTilesOnSideVal,
+			EightPuzzleLoader eightPuzzleLoader2) {
 		makeVars(frameSize, numOfTilesOnSideVal);
 		addMouseListener(new MyMouseListener());
 		eightPuzzleLoader = eightPuzzleLoader2;
@@ -175,55 +176,6 @@ public class EightPuzzle extends JPanel {
 	 *            the width of the resized image
 	 * @return the original image resized to the given dimensions
 	 */
-	private static BufferedImage resizeImage(final BufferedImage originalImage,
-			int width, int height) {
-		BufferedImage resizedImage = new BufferedImage(width, height,
-				originalImage.getType());
-		Graphics2D g = resizedImage.createGraphics();
-		g.drawImage(originalImage, 0, 0, width, height, null);
-		g.dispose();
-		return resizedImage;
-	}
-
-	/**
-	 * 
-	 * Generate the hashmap that represents the connection between the 2d array
-	 * and the images that data refers too
-	 * @param url 
-	 */
-	private void generateMap(URL url) {
-		BufferedImage img = null;
-		
-		img = (BufferedImage) eightPuzzleLoader.loadImage(url);
-		finishGenerate(img);
-	}
-	
-
-	private void finishGenerate(BufferedImage img) {
-		imageMap = new HashMap<Integer, Image>();
-		img = resizeImage(img, currentPanelSize, currentPanelSize);
-		currentImage = copyImg(img);
-		
-		Graphics g = img.getGraphics();
-		g.setColor(Color.LIGHT_GRAY);
-		g.fillRect((numOfTilesOnSide - 1) * sideSize, (numOfTilesOnSide - 1)
-				* sideSize, sideSize, sideSize);
-		g.dispose();
-		
-		imageMap = splitImg(img, numOfTilesOnSide);
-	}
-
-	static BufferedImage copyImg(BufferedImage bi) {
-		ColorModel cm = bi.getColorModel();
-		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-		WritableRaster raster = bi.copyData(null);
-		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-	}
-
-	public Image getCurrentImage() {
-		return currentImage;
-	}
-
 	/**
 	 * Split up the image into tiles numbered 1-(numOfTilesOnSide^2 - 1) with
 	 * the bottom right tile being numbered 0
@@ -236,10 +188,10 @@ public class EightPuzzle extends JPanel {
 	 */
 	private Map<Integer, Image> splitImg(BufferedImage img, int numOfTilesOnSide) {
 		Map<Integer, Image> map = new HashMap<>();
-
+		
 		int sideWidth2 = img.getWidth() / numOfTilesOnSide;
 		int sideHeight2 = img.getHeight() / numOfTilesOnSide;
-
+		
 		int n = 1;
 		for (int i = 0; i < numOfTilesOnSide; i++) {
 			for (int j = 0; j < numOfTilesOnSide; j++) {
@@ -255,6 +207,55 @@ public class EightPuzzle extends JPanel {
 		}
 		return map;
 	}
+	
+	private static BufferedImage resizeImage(final BufferedImage originalImage,
+			int width, int height) {
+		BufferedImage resizedImage = new BufferedImage(width, height,
+				originalImage.getType());
+		Graphics2D g = resizedImage.createGraphics();
+		g.drawImage(originalImage, 0, 0, width, height, null);
+		g.dispose();
+		return resizedImage;
+	}
+
+	/**
+	 * 
+	 * Generate the hashmap that represents the connection between the 2d array
+	 * and the images that data refers too
+	 * 
+	 * @param url
+	 */
+	private void generateMap(URL url) {
+		BufferedImage img = null;
+		img = (BufferedImage) eightPuzzleLoader.loadImage(url);
+		finishGenerate(img);
+	}
+
+	private void finishGenerate(BufferedImage img) {
+		imageMap = new HashMap<Integer, Image>();
+		img = resizeImage(img, currentPanelSize, currentPanelSize);
+		currentImage = copyImg(img);
+
+		Graphics g = img.getGraphics();
+		g.setColor(Color.LIGHT_GRAY);
+		g.fillRect((numOfTilesOnSide - 1) * sideSize, (numOfTilesOnSide - 1)
+				* sideSize, sideSize, sideSize);
+		g.dispose();
+
+		imageMap = splitImg(img, numOfTilesOnSide);
+	}
+
+	static BufferedImage copyImg(BufferedImage bi) {
+		ColorModel cm = bi.getColorModel();
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		WritableRaster raster = bi.copyData(null);
+		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+	}
+
+	public Image getCurrentImage() {
+		return currentImage;
+	}
+
 
 	/**
 	 * Scramble the gameboard by making 25 random moves
@@ -303,6 +304,20 @@ public class EightPuzzle extends JPanel {
 		return false;
 	}
 
+	public double numWrong() {
+		return new Board(gameBoard).hamming();
+	}
+	
+	public int getSizeOfPanel() {
+		return currentPanelSize;
+	}
+	
+	public void changePic(URL url) {
+		generateMap(url);
+		repaint();
+	}
+	
+	
 	/**
 	 * Display a JOptionPane and execute the proper action based on the users
 	 * input
@@ -317,6 +332,7 @@ public class EightPuzzle extends JPanel {
 		repaint();
 	}
 
+	
 	/**
 	 * Swap a position on the board with the coordinates of the zero value in
 	 * the gameboard. All values are allowed but some are ignored.
@@ -397,18 +413,5 @@ public class EightPuzzle extends JPanel {
 				}
 			}
 		}
-	}
-
-	public double numWrong() {
-		return new Board(gameBoard).hamming();
-	}
-
-	public int getSizeOfPanel() {
-		return currentPanelSize;
-	}
-
-	public void changePic(URL url) {
-		generateMap(url);
-		repaint();
 	}
 }

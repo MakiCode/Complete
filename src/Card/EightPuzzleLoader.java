@@ -14,43 +14,19 @@ public class EightPuzzleLoader {
 	BufferedImage image;
 
 	public EightPuzzleLoader() {
-		if (System.getProperty("os.name").startsWith("Windows")) {
-			handleWindows();
-		} else {
-			handleMacLinux();
-		}
-	}
-
-	private void handleWindows() {
 		File file = new File(System.getProperty("user.home") + File.separator
-				+ "EightPuzzle");
+				+ ".EightPuzzle");
 		try {
 			if (file.mkdir()) {
 				url = getClass().getResource("image.png");
 				BufferedImage img = ImageIO.read(url);
-				ImageIO.write(img, "png", new File(file.getPath()
-						+ File.separator + "image.png"));
-				Runtime.getRuntime().exec("attrib +H " + file.getPath());
-				url = new URL("file://" + file.getPath() + File.separator + "image.png");
+				String path = file.getPath() + File.separator + "image.png";
+				ImageIO.write(img, "png", new File(path));
+				url = new URL("file:///" + file.getPath() + File.separator
+						+ "image.png");
 			} else {
-				url = new URL("file://" + file.getPath() + File.separator + "image.png");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void handleMacLinux() {
-		File file = new File(System.getProperty("user.home") + "/.EightPuzzle");
-		try {
-			if (file.mkdir()) {
-				url = getClass().getResource("image.png");
-				BufferedImage img = ImageIO.read(url);
-				ImageIO.write(img, "png", new File(file.getPath()
-						+ "/image.png"));
-				url = new URL("file://" + file.getPath() + "/image.png");
-			} else {
-				url = new URL("file://" + file.getPath() + "/image.png");
+				url = new URL("file:///" + file.getPath() + File.separator
+						+ "image.png");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

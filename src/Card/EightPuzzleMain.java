@@ -122,8 +122,7 @@ public class EightPuzzleMain extends JFrame {
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				URL file = null;
 				try {
-					file = new URL("file://"
-							+ fc.getSelectedFile().getAbsolutePath());
+					file = fc.getSelectedFile().toURI().toURL();
 				} catch (MalformedURLException e1) {
 					e1.printStackTrace();
 				}
@@ -182,11 +181,6 @@ public class EightPuzzleMain extends JFrame {
 		}
 	}
 
-	// The description of this filter
-	public String getDescription() {
-		return "Just Images";
-	}
-
 	private class ChangeNumListener implements ActionListener {
 
 		@Override
@@ -218,16 +212,17 @@ public class EightPuzzleMain extends JFrame {
 				}
 			}
 		}
+
+		public boolean isInteger(String str) {
+			try {
+				Integer.parseInt(str);
+				return true;
+			} catch (NumberFormatException nfe) {
+			}
+			return false;
+		}
 	}
 
-	public boolean isInteger(String str) {
-		try {
-			Integer.parseInt(str);
-			return true;
-		} catch (NumberFormatException nfe) {
-		}
-		return false;
-	}
 
 	private class ResizeListener extends ComponentAdapter {
 
