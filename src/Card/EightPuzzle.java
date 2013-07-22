@@ -11,15 +11,13 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Stack;
 
-import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -32,6 +30,7 @@ import javax.swing.JPanel;
  */
 @SuppressWarnings("serial")
 public class EightPuzzle extends JPanel {
+	//TODO: Work on animator
 
 	private int currentPanelSize;
 	private int sideSize;
@@ -39,8 +38,8 @@ public class EightPuzzle extends JPanel {
 	private int[][] gameBoard;
 	private int numOfTilesOnSide;
 	private int numOfFrames = 30;
-	private File imageFile;
 	private Image currentImage;
+	private EightPuzzleLoader eightPuzzleLoader;
 
 	/**
 	 * Activate the animation loop. This Method runs forever so be careful.
@@ -65,17 +64,16 @@ public class EightPuzzle extends JPanel {
 	 *            into
 	 * @param numOfTilesOnSideVal
 	 *            The number of tiles on one side of the game
+	 * @param eightPuzzleLoader2 
 	 */
-	public EightPuzzle(final int frameSize, final int numOfTilesOnSideVal) {
+	public EightPuzzle(final int frameSize, final int numOfTilesOnSideVal, EightPuzzleLoader eightPuzzleLoader2) {
 		makeVars(frameSize, numOfTilesOnSideVal);
 		addMouseListener(new MyMouseListener());
+		eightPuzzleLoader = eightPuzzleLoader2;
 	}
 
-	public void createGame(String imageName) {
-		String path = getClass().getResource(imageName).getFile();
-		File imageFile = new File(path);
-		this.imageFile = imageFile;
-		generateMap(imageFile);
+	public void createGame() {
+		generateMap(eightPuzzleLoader.getDefaultURL());
 		scramble();
 	}
 
@@ -120,7 +118,7 @@ public class EightPuzzle extends JPanel {
 	public void resizeGame(final int frameSize, int numOfTilesOnSideVal) {
 		gameBoard = null;
 		makeVars(frameSize, numOfTilesOnSideVal);
-		generateMap(imageFile);
+		generateMap(eightPuzzleLoader.getLastUrl());
 		scramble();
 		repaint();
 	}
@@ -191,32 +189,28 @@ public class EightPuzzle extends JPanel {
 	 * 
 	 * Generate the hashmap that represents the connection between the 2d array
 	 * and the images that data refers too
+	 * @param url 
 	 */
-	private void generateMap(File f) {
+	private void generateMap(URL url) {
 		BufferedImage img = null;
-		System.out.println("f.canRead() = " + f.canRead());
-		System.out.println("f.getAbsolutePath() = " + f.getAbsolutePath());
-		System.out.println("f.exists() = " + f.exists());
 		
-		try {
-			img = ImageIO.read(f);
-		} catch (IOException e) {
-			showFailedLoad();
-			e.printStackTrace();
-			return;
-		}
+		img = (BufferedImage) eightPuzzleLoader.loadImage(url);
+		finishGenerate(img);
+	}
+	
+
+	private void finishGenerate(BufferedImage img) {
 		imageMap = new HashMap<Integer, Image>();
 		img = resizeImage(img, currentPanelSize, currentPanelSize);
 		currentImage = copyImg(img);
-
+		
 		Graphics g = img.getGraphics();
 		g.setColor(Color.LIGHT_GRAY);
 		g.fillRect((numOfTilesOnSide - 1) * sideSize, (numOfTilesOnSide - 1)
 				* sideSize, sideSize, sideSize);
 		g.dispose();
-
+		
 		imageMap = splitImg(img, numOfTilesOnSide);
-		imageFile = f;
 	}
 
 	static BufferedImage copyImg(BufferedImage bi) {
@@ -397,10 +391,10 @@ public class EightPuzzle extends JPanel {
 
 				if (swap(e.getX() / sideSize, e.getY() / sideSize)) {
 					repaint();
+					if (isSolved()) {
+						showComplete();
+					}
 				}
-			}
-			if (isSolved()) {
-				showComplete();
 			}
 		}
 	}
@@ -413,14 +407,8 @@ public class EightPuzzle extends JPanel {
 		return currentPanelSize;
 	}
 
-	public void changePic(File file) {
-		generateMap(file);
+	public void changePic(URL url) {
+		generateMap(url);
 		repaint();
-	}
-
-	private void showFailedLoad() {
-		JOptionPane.showMessageDialog(this,
-				"The file you specified failed to load!!", "Failed to load",
-				JOptionPane.ERROR_MESSAGE);
 	}
 }

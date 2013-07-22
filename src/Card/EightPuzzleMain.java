@@ -10,9 +10,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -32,8 +32,8 @@ public class EightPuzzleMain extends JFrame {
 	private EightPuzzle puzzle;
 	private JPanel buttonPanel;
 	private JMenuBar menubar;
-	private String defaultFileName = "/src/Card/image.png";
-	private String defaultFile;
+//	private String defaultFileName = "/src/Card/image.png";
+	private EightPuzzleLoader eightPuzzleLoader;
 
 	public static void main(final String[] args) {
 		EightPuzzleMain epm = new EightPuzzleMain();
@@ -41,14 +41,12 @@ public class EightPuzzleMain extends JFrame {
 	}
 
 	private void go() {
+		eightPuzzleLoader = new EightPuzzleLoader();
 		setSize(frameWidth, frameHeight);
-		puzzle = new EightPuzzle(frameWidth, numOfTilesOnSide);
+		puzzle = new EightPuzzle(frameWidth, numOfTilesOnSide, eightPuzzleLoader);
 		add(puzzle, BorderLayout.CENTER);
 
-		defaultFile = getClass().getResource(defaultFileName).getFile();
-		System.out.println("Main file is:" + defaultFile);
-
-		puzzle.createGame(defaultFileName);
+		puzzle.createGame();
 
 		setLocation(EightPuzzle.getCenterPosition(getSize(), Toolkit
 				.getDefaultToolkit().getScreenSize()));
@@ -101,38 +99,18 @@ public class EightPuzzleMain extends JFrame {
 
 	private class saveListener implements ActionListener {
 
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Image image = puzzle.getCurrentImage();
-			try {
-				ImageIO.write((BufferedImage) image, "png", new File(
-						defaultFile));
-				JOptionPane.showMessageDialog(EightPuzzleMain.this, "This image is now to the default image.", "Success!", JOptionPane.DEFAULT_OPTION);
-			} catch (IOException e1) {
-				JOptionPane.showMessageDialog(EightPuzzleMain.this,
-						"Failed to write to file, Error ID;" + e.getID(), "Failed to write", JOptionPane.ERROR_MESSAGE);
-			}
+			eightPuzzleLoader.saveImage((BufferedImage) image);
+			JOptionPane.showMessageDialog(EightPuzzleMain.this,
+					"This image is now to the default image.", "Success!",
+					JOptionPane.DEFAULT_OPTION);
+
 		}
 
 	}
-
-	// /**
-	// *
-	// * @param in
-	// * @return A buffered image
-	// *
-	// * @author https://forums.oracle.com/thread/1290824 Response 2
-	// */
-	// BufferedImage getRenderedImage(Image in) {
-	// int w = in.getWidth(null);
-	// int h = in.getHeight(null);
-	// int type = BufferedImage.TYPE_INT_RGB;
-	// BufferedImage out = new BufferedImage(w, h, type);
-	// Graphics2D g2 = out.createGraphics();
-	// out.drawImage(in, 0, 0, null);
-	// g2.dispose();
-	// return out;
-	// }
 
 	private class ChangePicListener implements ActionListener {
 
@@ -142,7 +120,13 @@ public class EightPuzzleMain extends JFrame {
 			fc.setFileFilter(new ImageFilter());
 			int returnVal = fc.showOpenDialog(EightPuzzleMain.this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File file = fc.getSelectedFile();
+				URL file = null;
+				try {
+					file = new URL("file://"
+							+ fc.getSelectedFile().getAbsolutePath());
+				} catch (MalformedURLException e1) {
+					e1.printStackTrace();
+				}
 				puzzle.changePic(file);
 			}
 		}
@@ -194,7 +178,7 @@ public class EightPuzzleMain extends JFrame {
 
 		@Override
 		public String getDescription() {
-			return "Only images";
+			return "Only png images";
 		}
 	}
 
