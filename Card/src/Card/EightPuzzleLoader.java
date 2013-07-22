@@ -22,10 +22,10 @@ public class EightPuzzleLoader {
 				BufferedImage img = ImageIO.read(url);
 				String path = file.getPath() + File.separator + "image.png";
 				ImageIO.write(img, "png", new File(path));
-				url = new URL("file:/" + file.getPath() + File.separator
+				url = new URL("file:///" + file.getPath() + File.separator
 						+ "image.png");
 			} else {
-				url = new URL("file:/" + file.getPath() + File.separator
+				url = new URL("file:///" + file.getPath() + File.separator
 						+ "image.png");
 			}
 		} catch (IOException e) {
