@@ -7,4 +7,4 @@ of the dimensions of the puzzle, and changing
 the picture on the puzzle. More features to
 come!
 
-To run the app download EightPuzzle.jar and run it.
+To run the app download the repository and run EightPuzzle.jar.
