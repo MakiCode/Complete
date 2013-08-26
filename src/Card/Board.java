@@ -162,38 +162,23 @@ public class Board {
 				}
 			}
 		}
-		boolean upPossible = false;
-		boolean downPossible = false;
-		boolean leftPossible = false;
-		boolean rightPossible = false;
+
 		// discover which sides we can go to.
-		if (zeroRow + 1 < N) {
-			downPossible = true;
-		}
-		if (zeroRow - 1 >= 0) {
-			upPossible = true;
-		}
-		if (zeroColumn + 1 < N) {
-			rightPossible = true;
-		}
-		if (zeroColumn - 1 >= 0) {
-			leftPossible = true;
-		}
-
 		Stack<Board> stack = new Stack<Board>();
-
-		if (upPossible) {
-			stack.push(swap(zeroRow, zeroColumn, zeroRow - 1, zeroColumn));
-		}
-		if (downPossible) {
+		if (zeroRow + 1 < N) {
 			stack.push(swap(zeroRow, zeroColumn, zeroRow + 1, zeroColumn));
 		}
-		if (leftPossible) {
-			stack.push(swap(zeroRow, zeroColumn, zeroRow, zeroColumn - 1));
+		if (zeroRow - 1 >= 0) {
+			stack.push(swap(zeroRow, zeroColumn, zeroRow - 1, zeroColumn));
 		}
-		if (rightPossible) {
+		if (zeroColumn + 1 < N) {
 			stack.push(swap(zeroRow, zeroColumn, zeroRow, zeroColumn + 1));
 		}
+		if (zeroColumn - 1 >= 0) {
+			stack.push(swap(zeroRow, zeroColumn, zeroRow, zeroColumn - 1));
+		}
+
+
 		return stack;
 	} // all neighboring boards. Neighboring boards are defined as all boards
 		// that
